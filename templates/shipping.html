@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureCart</title>
+</head>
+<body>
+    <div class="topnav">
+        <a class="active" href="/">
+            <button>SecureCart</button>
+        </a>
+        <a href="/basket">
+            <button>Basket</button>
+        </a>
+        <a href="/login">
+            <button>Account</button>
+        </a>
+    </div>
+    <div class="welcome-message">Please Enter the Shipping Details</div>>
+        <div class="white-box">
+                
+            <form action="" method="post">
+
+                <div class="logs-label">Personal Details</div>
+                <!-- Change input fields to buttons acting as labels -->
+                <div>
+                    <button class="user-label-button">Forename</button>
+                    <input name="firstname" class="user-entry-box" placeholder="Example: Sarah"></input>
+                </div>
+                <div>
+                    <button class="user-label-button">Surname</button>
+                    <input name="lastname" class="user-entry-box" placeholder="Example: Smith"></input>
+                </div>
+                <div>
+                    <button class="user-label-button">First Line of Address</button>
+                    <input name="line1" class="user-entry-box"></input>
+                </div>
+                <div>
+                    <button class="user-label-button">Second Line of Address</button>
+                    <input name="line2" class="user-entry-box">
+                </div>
+                <div>
+                    <button class="user-label-button">City</button>
+                    <input name="city" class="user-entry-box">
+                </div>
+                <div>
+                    <button class="user-label-button">Postcode</button>
+                    <input name="postcode" class="user-entry-box">
+                </div>
+                <div>
+                    <input type="submit" class="sign-up-button" value="Complete Order" />
+                </div>
+            </form>
+            <!-- End of password entries -->
+        </div>
+    </div>
+    {% if error_message %}
+        <script>
+            alert("{{ error_message }}");
+        </script>
+    {% endif %}
+</body>
+</html>

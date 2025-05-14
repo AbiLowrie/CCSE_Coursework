@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureCart</title>
+</head>
+<body>
+    <div class="topnav">
+        <table>
+            <tbody>
+                <tr>
+                    <td>
+                        <form method="post" action="\">
+                            <button>Exit Admin Mode</button>
+                        </form>
+                    </td>
+                    <td>
+                        <a href="/addnewproduct">
+                            <button>Add a product</button>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="/addnewstock">
+                            <button>Add new stock</button>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="/removeproduct">
+                            <button>Remove a product</button>
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div>
+        <form action="/addnewproduct" METHOD="POST">
+            <table>
+                <tbody>
+                    <tr><input type="text" placeholder="Product Name" name="name"></tr>
+                    <tr><input type="text" placeholder="Product Description" name="description"></tr>
+                    <tr><input type="float" placeholder="Product Price" name="price"></tr>
+                    <tr><input type="integer" placeholder="Product Quantity" name="quantity"></tr>
+                    <tr><input type="submit" value="Add New Product"></tr>
+                </tbody>
+            </table>
+        </form>
+    </div>
+</html>

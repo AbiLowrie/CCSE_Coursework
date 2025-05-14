@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureCart</title>
+</head>
+
+<body>
+    <div class="container">
+        <div class="topnav">
+            <a class="active" href="/">
+                <button>SecureCart</button>
+            </a>
+            <a href="/basket">
+                <button>Basket</button>
+            </a>
+        </div>
+        <div class="page-title">Register</div>
+        <div class="white-box">
+            
+            <form action="/createaccount" method="post">
+
+                <div class="logs-label">Personal Details</div>
+                <!-- Change input fields to buttons acting as labels -->
+                <div>
+                    <button class="user-label-button">Forename</button>
+                    <input name="forename" class="user-entry-box" placeholder="Example: Sarah"size="40"></input>
+                </div>
+                <div>
+                    <button class="user-label-button">Surname</button>
+                    <input name="surname" class="user-entry-box" placeholder="Example: Smith"size="40"></input>
+                </div>
+                <div>
+                    <button class="user-label-button">Email Address</button>
+                    <input name="email" class="user-entry-box" placeholder="Example: sarah.smith@email.com"size="40"></input>
+                </div>
+                <!-- End of buttons acting as labels -->
+                <div class="logs-label">Online Account</div>
+                <!-- Replace the table with password entries -->
+                <div>
+                    <button class="user-label-button">Username</button>
+                    <input name="username" class="user-entry-box" placeholder="Enter Username"size="40">
+                </div>
+                <div>
+                    <button class="user-label-button">Password</button>
+                    <input name="password" type="password" class="user-entry-box"
+                        placeholder="10+ characters with both cases, symbols and digits" size="40">
+                </div>
+                <div>
+                    <button class="user-label-button">Confirm Password</button>
+                    <input name="confirmPassword" type="password" class="user-entry-box" placeholder="Confirm Password"size="40">
+                </div>
+                <div>
+                    <input type="submit" class="sign-up-button" value="Sign Up" />
+                </div>
+            </form>
+            <!-- End of password entries -->
+
+        </div>
+    </div>
+    {% if error_message %}
+        <script>
+            alert("{{ error_message }}");
+        </script>
+    {% endif %}
+</body>
+
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureCart</title>
+</head>
+<body>
+    <div class="topnav">
+        <a class="active" href="/">
+            <button>SecureCart</button>
+        </a>
+        <a href="/basket">
+            <button>Basket</button>
+        </a>
+        <a href="/login">
+            <button>Account</button>
+        </a>
+    </div>
+    <div class="welcome-message">Please Login</div>>
+            <div class="scrollable-table">
+                <form action="/login" method="post">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <input name="username" type="text" placeholder="Username">
+                            </tr>
+                            <tr>
+                                <input name="password" type="password" placeholder="Password">
+                            </tr>
+                            <tr>
+                                <input name="login" type="submit" value="Login">
+                            </tr>
+                            <tr>
+                                <a href="/createaccount">
+                                    <h3>Don't have an account? Make one today.</h3>
+                                </a>
+                            </tr>
+                        </tbody>
+                    </table>
+                </form>
+        </div>
+    </div>
+    {% if error_message %}
+        <script>
+            alert("{{ error_message }}");
+        </script>
+    {% endif %}
+</body>
+</html>

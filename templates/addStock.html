@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureCart</title>
+</head>
+<body>
+    <div class="topnav">
+        <table>
+            <tbody>
+                <tr>
+                    <td>
+                        <form method="post" action="\">
+                            <button>Exit Admin Mode</button>
+                        </form>
+                    </td>
+                    <td>
+                        <a href="/addnewproduct">
+                            <button>Add a product</button>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="/addnewstock">
+                            <button>Add new stock</button>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="/removeproduct">
+                            <button>Remove a product</button>
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div>
+        <h1>Add New Quantity in Stock</h1>
+    </div>
+    <div>
+        <table>
+            <tbody>
+                <form action="" method="post">
+                    <tr>
+                        <td>
+                            <label type="text" name="name" value="{{product.name}}">{{product.name}}</label>
+                        </td>
+                        <td>
+                            <input type="number" placeholder="{{product.quantity}}" min="{{product.quantity}}" name="quantity">
+                            <input type="submit" value="Update Stock">
+                        </td>
+                    </tr>
+                </form>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

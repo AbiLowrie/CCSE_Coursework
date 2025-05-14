@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureCart</title>
+</head>
+<body>
+    <div class="container">
+        <div class="logo"></div>
+        <div class="topnav">
+            <a class="active" href="/">
+                <button>SecureCart</button>
+            </a>
+            <a href="/basket">
+                <button>Basket</button>
+            </a>
+            <a href="/login">
+                <button>Account</button>
+            </a>
+        </div>
+        <div class="welcome-message">Welcome to SecureCart</div>>
+                <form action="" method="post">
+                    <table>
+                        <!-- table head, which contains the headers -->
+                        <!-- none are needed for this table-->
+
+                        <!-- table body, which contains the table content -->
+                        <tbody>
+
+                            <!-- tableData is passed from our flask backend -->
+                            <!-- it contains our table contents -->
+                            <!-- we iterate through each row inside tableData -->
+                            {% for row in tableData %}
+                                <!-- each row is something like -->
+                                    <tr id="{{row.productID}}">
+                                        <td>
+                                            <a href="/{{row.id}}" type="submit" class="button" value="{{row.name}}" name="name">{{row.name}}</a>
+                                        </td>
+                                    </tr>
+                            <!-- jinja for loop syntax. we're ending our for loop -->
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </form>
+        </div>
+    </div>
+
+    {% if error_message %}
+        <script>
+            alert("{{ error_message }}");
+        </script>
+    {% endif %}
+</body>
+</html>

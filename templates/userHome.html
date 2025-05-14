@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Account</title>
+</head>
+<body>
+    <div class="container">
+        <div class="logo"></div>
+        <div class="topnav">
+            <a class="active" href="/">
+                <button>SecureCart</button>
+            </a>
+            <a href="/basket">
+                <button>Basket</button>
+            </a>
+            <form method="post" action="\home">
+                <button>Log Out</button>
+            </form>
+        </div>
+        <div>
+            <h2>Previous Orders</h2>
+            <table>
+                <tbody>
+                    {% for order in listOfOrders %}
+                        <tr>
+                            <td>
+                                <h3>Ref #{{order.orderID}}</h3>
+                            </td>
+                        </tr>
+                        {% for i in range(0, order.products|length) %}
+                            {% with product=order.products[i] %}
+                                <tr>
+                                    <td>
+                                        <p>{{order.names[i]}}</p>
+                                    </td>
+                                    <td>
+                                        <p>{{product.productQuantity}}</p>
+                                    </td>
+                                    <td>
+                                        <p>£{{product.subtotal}}</p>
+                                    </td>
+                                </tr>
+                            {% endwith %}
+                        {% endfor %}
+                        <tr>
+                            <td></td>
+                            <td>
+                                <h4>Total: </h6>
+                            </td>
+                            <td>
+                                <h4>£{{order.total}}</h6>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if error_message %}
+        <script>
+            alert("{{ error_message }}");
+        </script>
+    {% endif %}
+</body>
+</html>

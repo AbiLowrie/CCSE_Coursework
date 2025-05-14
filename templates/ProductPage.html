@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureCart</title>
+</head>
+<body>
+    <div class="topnav">
+        <a class="active" href="/">
+            <button>SecureCart</button>
+        </a>
+        <a href="/basket">
+            <button>Basket</button>
+        </a>
+        <a href="/login">
+            <button>Account</button>
+        </a>
+    </div>
+    <div>
+        <form action="/" METHOD="POST">
+            <table>
+                <tbody>
+                    <tr>
+                        <td>
+                            <label type="text" placeholder="productName" name="name" value="{{selectedID.name}}">{{selectedID.name}}</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label type="text" placeholder="productDescription" name="description" value="{{selectedID.description}}">{{selectedID.description}}</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label type="text" placeholder="productPrice" name="price" value="{{selectedID.price}}">£ {{selectedID.price}}</label>
+                        </td>
+                        <td>
+                            <input type="number" placeholder="0" min="0" max="{{selectedID.quantity}}" name="quantity">
+                            <input type="submit" value="Add to Basket">
+                            <input name="id" value="{{selectedID.id}}" style="display:none;">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+    </div>
+</body>
+</html>

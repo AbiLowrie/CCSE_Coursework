@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureCart</title>
+</head>
+<body>
+    <div class="topnav">
+        <table>
+            <tbody>
+                <tr>
+                    <td>
+                        <form method="post" action="\">
+                            <button>Exit Admin Mode</button>
+                        </form>
+                    </td>
+                    <td>
+                        <a href="/addnewproduct">
+                            <button>Add a product</button>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="/addnewstock">
+                            <button>Add new stock</button>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="/removeproduct">
+                            <button>Remove a product</button>
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div>
+        <h1>Select a Product to Delete</h1>
+    </div>
+    <div>
+        <table>
+            <tbody>
+                {% for row in tableData %}
+                    <form method="POST" action="">
+                        <tr name="idValue" id="{{row.productID}}">
+                            <td>
+                                <button type="submit" value="{{row.id}}" name="id">Delete {{row.name}}</button>
+                            </td>
+                        </tr>
+                    </form>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
