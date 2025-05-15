@@ -26,6 +26,11 @@ from werkzeug.exceptions import NotFound
 
 import hashlib
 
+# Creating a FlaskForm to manage CSRF properly
+class NameForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
 # global variables
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
@@ -34,6 +39,7 @@ csrf = CSRFProtect(app)  # Enable CSRF Protection
 
 accountID = int()
 accountType = str()
+
 
 # Intialise database
 db = SQLAlchemy(app)
@@ -268,10 +274,6 @@ def apply_caching(response):
     )
     return response
 
-# Creating a FlaskForm to manage CSRF properly
-class NameForm(FlaskForm):
-    name = StringField('Name', validators=[DataRequired()])
-    submit = SubmitField('Submit')
 
 # routes here
 @app.route("/", methods=['GET', 'POST'])
@@ -286,7 +288,7 @@ def index():
 
                 accountID = -1
                 accountType = ""
-                return redirect("/")
+                return redirect("/",form=form)
             else:
                 productID = request.form['id']
                 addedQuantity = request.form['quantity']
@@ -305,7 +307,7 @@ def index():
 @app.route("/<int:id>", methods=['GET', 'POST'])
 def productPage(id):
     selectedID = DBProducts.query.get_or_404(id)
-    form = NameForm()
+    form = NameForm() 
     
     if request.method == "POST":
         if form.validate_on_submit():
@@ -322,11 +324,11 @@ def productPage(id):
         for i in range(0,basket.productIDs.__len__()):
             if int(id) == int(basket.productIDs[i]):
                 selectedID.quantity=selectedID.quantity-basket.quantities[i]
-        return render_template("ProductPage.html",selectedID = selectedID)   
+        return render_template("ProductPage.html",selectedID = selectedID,form=form)   
 
 @app.route("/basket", methods=['GET', 'POST'])
 def showBasket():
-    form = NameForm()
+    form = NameForm() 
 
     if request.method == "POST":
         if form.validate_on_submit():
@@ -343,19 +345,21 @@ def showBasket():
                 "quantityAdded": basket.quantities[i],
                 "subtotals": float(basket.quantities[i])*fullProduct.price,
             })
-        return render_template("Basket.html",basket=basketItem,total=basket.total)
+        return render_template("Basket.html",basket=basketItem,total=basket.total,form=form)
 
 @app.route("/delete/<int:id>", methods=['GET', 'POST'])
 def deleteItem(id):
+    form = NameForm() 
+
     basket.Remove_Product(id)  
-    return redirect("/basket")
+    return redirect("/basket",form=form)
 
 @app.route("/shipping", methods=['GET', 'POST'])
 def selectshipping():
-    form = NameForm()
+    form = NameForm() 
 
     if accountID == -1:
-        return render_template("Login.html",error_message="Please Login before placing an order")
+        return render_template("Login.html",error_message="Please Login before placing an order",form=form)
     else:
         if request.method == "POST":
             if form.validate_on_submit():
@@ -417,7 +421,7 @@ def selectshipping():
 def accessAccount():
     global accountID
     global accountType
-    form = NameForm()
+    form = NameForm() 
 
     if request.method == "POST":
         if form.validate_on_submit():
@@ -444,14 +448,14 @@ def accessAccount():
         
     else:
         if accountID != -1:
-            return redirect("/home")
+            return redirect("/home",form=form)
         else:
-            return render_template("Login.html")
+            return render_template("Login.html",form=form)
 
 @app.route("/createaccount", methods=['GET', 'POST'])
 def createAccount():
         form = NameForm()
-        
+
         if request.method == "POST":
             if form.validate_on_submit():
                 password = CheckIfViablePassword(
@@ -479,20 +483,21 @@ def createAccount():
                     except:
                         return "There was an error creating this account"
                 else:
-                    return render_template("MakeAccount.html",error_message="Please make sure all information fits the requirements")
+                    return render_template("MakeAccount.html",error_message="Please make sure all information fits the requirements",form=form)
             else:
                 return 'CSRF Token Missing or Invalid!'
         else:
-            return render_template("MakeAccount.html")
+            return render_template("MakeAccount.html",form=form)
 
 @app.route("/home", methods=['GET', 'POST'])
 def homePages():
     global accountID
     global accountType
+    form = NameForm() 
 
     if request.method == 'GET':
         if accountType == "1":
-            return render_template("adminHome.html")
+            return render_template("adminHome.html",form=form)
         elif accountType == "0":
             allOrders = DBOrders.query.filter_by(accountID=accountID).all()
             listOfOrders = []
@@ -500,7 +505,7 @@ def homePages():
                 orderToAdd = Order()
                 orderToAdd.findOrder(order.orderID)
                 listOfOrders.append(orderToAdd)
-            return render_template("userHome.html",listOfOrders=listOfOrders)
+            return render_template("userHome.html",listOfOrders=listOfOrders,form=form)
         else:
             return NotFound()
     elif request.method == 'POST' and accountType == "1":
@@ -522,19 +527,20 @@ def homePages():
             try:
                 db.session.add(new_account)
                 db.session.commit()
-                return render_template("adminHome.html")
+                return render_template("adminHome.html",form=form)
             except:
                 return "There was an error creating this account"
         else:
-            return render_template("MakeAccount.html",error_message="Please make sure all information fits the requirements")
+            return render_template("MakeAccount.html",error_message="Please make sure all information fits the requirements",form=form)
     else:
         accountID = -1
         accountType = ""
-        return redirect("/")
+        return redirect("/",form=form)
 
 # Admin Routes Specific
 @app.route("/addnewproduct", methods=['GET', 'POST'])
 def newProductPage():
+    form = NameForm() 
 # Redirect when a specific item page is selected. Takes the product ID and returns to the new page all the information for it
     if accountType == "1":
         if request.method == "POST":
@@ -548,21 +554,23 @@ def newProductPage():
             try:
                 db.session.add(new_product)
                 db.session.commit()
-                return redirect("/addnewproduct")
+                return redirect("/addnewproduct",form=form)
             except:
                 return "There was an error adding this product."
             
         else:
-            return render_template("addNewProduct.html")  
+            return render_template("addNewProduct.html",form=form)  
     else:
         return NotFound()
 
 @app.route("/addnewstock", methods=['GET', 'POST'])
 def addNewStock():
+    form = NameForm() 
+
     if accountType == "1":
         if request.method == "GET":
             products = DBProducts.query
-            return render_template("findProduct.html", tableData = products)
+            return render_template("findProduct.html", tableData = products,form=form)
         else:
             product = DBProducts.query.get_or_404(request.form['id'])
             return redirect(url_for(
@@ -573,6 +581,8 @@ def addNewStock():
         return NotFound()
 @app.route("/addnewstock/<int:id>", methods=['GET', 'POST'])
 def addNewStockITEM(id):
+    form = NameForm() 
+
     if accountType == "1":
         if request.method == "POST":
             product = DBProducts.query.get_or_404(id)
@@ -581,27 +591,29 @@ def addNewStockITEM(id):
             try:
                 db.session.add(product)
                 db.session.commit()
-                return redirect("/addnewstock")
+                return redirect("/addnewstock",form=form)
             except:
                 return "There was an error adding updating the stock for this product."
         else:
             product = DBProducts.query.get_or_404(id)
-            return render_template("addStock.html",product=product)
+            return render_template("addStock.html",product=product,form=form)
     else:
         return NotFound()
 
 @app.route("/removeproduct", methods=['GET', 'POST'])
 def removeProduct():
+    form = NameForm() 
+
     if accountType == "1":
         if request.method == "GET":
             products = DBProducts.query
-            return render_template("findProductDELETE.html", tableData = products)
+            return render_template("findProductDELETE.html", tableData = products,form=form)
         else: 
             productToRemove = DBProducts.query.get_or_404(request.form['id'])
             try:
                 db.session.delete(productToRemove)
                 db.session.commit()
-                return redirect("/removeproduct")
+                return redirect("/removeproduct",form=form)
             except:
                 return "There was an error adding updating the stock for this product."
     else:
