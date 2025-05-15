@@ -19,6 +19,7 @@
     </div>
     <div>
         <form action="/" METHOD="POST">
+            {{ form.hidden_tag() }}  <!-- This automatically includes CSRF token -->
             <table>
                 <tbody>
                     <tr>

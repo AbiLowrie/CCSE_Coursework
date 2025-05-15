@@ -21,6 +21,7 @@
         </div>
         <div class="welcome-message">Welcome to SecureCart</div>>
                 <form action="" method="post">
+                    {{ form.hidden_tag() }}  <!-- This automatically includes CSRF token -->
                     <table>
                         <!-- table head, which contains the headers -->
                         <!-- none are needed for this table-->
@@ -35,6 +36,7 @@
                                 <!-- each row is something like -->
                                     <tr id="{{row.productID}}">
                                         <td>
+                                            
                                             <a href="/{{row.id}}" type="submit" class="button" value="{{row.name}}" name="name">{{row.name}}</a>
                                         </td>
                                     </tr>

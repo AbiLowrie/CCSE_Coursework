@@ -20,6 +20,7 @@
     <div class="welcome-message">Please Login</div>>
             <div class="scrollable-table">
                 <form action="/login" method="post">
+                    {{ form.hidden_tag() }}  <!-- This automatically includes CSRF token -->
                     <table>
                         <tbody>
                             <tr>

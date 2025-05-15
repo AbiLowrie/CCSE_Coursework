@@ -21,6 +21,7 @@
         <div class="white-box">
             
             <form action="/createaccount" method="post">
+                {{ form.hidden_tag() }}  <!-- This automatically includes CSRF token -->
 
                 <div class="logs-label">Personal Details</div>
                 <!-- Change input fields to buttons acting as labels -->

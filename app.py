@@ -11,7 +11,12 @@ from flask import (
     request,
     session,
     url_for,
+    Response
 )
+from flask_wtf import FlaskForm, CSRFProtect
+from wtforms import StringField, SubmitField
+from wtforms.validators import DataRequired
+
 import os
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import select, ForeignKey
@@ -24,6 +29,8 @@ import hashlib
 # global variables
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.secret_key = 'your_secret_key'  # Required for CSRF protection
+csrf = CSRFProtect(app)  # Enable CSRF Protection
 
 accountID = int()
 accountType = str()
@@ -239,42 +246,78 @@ def AES_with_ECB_DECODE(cipherText):
         plainText += chr(XOR)
     return plainText
 
+# Define POST Request method
+@app.after_request
+def apply_caching(response):
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'none'; "
+        "script-src 'self'; "
+        "style-src 'self'; "
+        "img-src 'self'; "
+        "font-src 'self'; "
+        "connect-src 'self'; "
+        "frame-src 'none'; "
+        "object-src 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self'; "
+        "media-src 'self'; "
+        "manifest-src 'self'; "
+        "worker-src 'self'; "
+        "frame-ancestors 'none';"
+    )
+    return response
+
+# Creating a FlaskForm to manage CSRF properly
+class NameForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
 # routes here
 @app.route("/", methods=['GET', 'POST'])
 def index():
     global accountID
     global accountType
+    form = NameForm()
 
     if request.method == "POST":
-        if accountType == "1":
+        if form.validate_on_submit():
+            if accountType == "1":
 
-            accountID = -1
-            accountType = ""
-            return redirect("/")
+                accountID = -1
+                accountType = ""
+                return redirect("/")
+            else:
+                productID = request.form['id']
+                addedQuantity = request.form['quantity']
+
+                basket.Add_Product(id=productID,quantity=addedQuantity)
+
+                products = DBProducts.query
+                return render_template("Index.html", tableData = products,form=form)
         else:
-            productID = request.form['id']
-            addedQuantity = request.form['quantity']
-
-            basket.Add_Product(id=productID,quantity=addedQuantity)
-
-            products = DBProducts.query
-            return render_template("Index.html", tableData = products)
+            return 'CSRF Token Missing or Invalid!'
     
     else:
         products = DBProducts.query
-        return render_template("Index.html", tableData = products)
+        return render_template("Index.html", tableData = products,form=form)
 
 @app.route("/<int:id>", methods=['GET', 'POST'])
 def productPage(id):
     selectedID = DBProducts.query.get_or_404(id)
+    form = NameForm()
     
     if request.method == "POST":
-        selectedID.name = request.form['name']
-        try:
-            db.session.commit()
-            return redirect('/')
-        except:
-            return "There was an error adding this product."
+        if form.validate_on_submit():
+            selectedID.name = request.form['name']
+            try:
+                db.session.commit()
+                return redirect('/',form = form)
+            except:
+                return "There was an error adding this product."
+        else:
+            return 'CSRF Token Missing or Invalid!'
+        
     else:
         for i in range(0,basket.productIDs.__len__()):
             if int(id) == int(basket.productIDs[i]):
@@ -283,8 +326,13 @@ def productPage(id):
 
 @app.route("/basket", methods=['GET', 'POST'])
 def showBasket():
+    form = NameForm()
+
     if request.method == "POST":
-        return redirect("/shipping")
+        if form.validate_on_submit():
+            return redirect("/shipping",form = form)
+        else:
+            return 'CSRF Token Missing or Invalid!'
     else:
         basketItem = []
 
@@ -304,58 +352,64 @@ def deleteItem(id):
 
 @app.route("/shipping", methods=['GET', 'POST'])
 def selectshipping():
+    form = NameForm()
+
     if accountID == -1:
         return render_template("Login.html",error_message="Please Login before placing an order")
     else:
         if request.method == "POST":
-            nameTo = request.form["firstname"]+" "+request.form["lastname"]
-            address = request.form["line1"]+";"+request.form["line2"]+";"+request.form["city"]
-            postcode = request.form["postcode"]
+            if form.validate_on_submit():
+                nameTo = request.form["firstname"]+" "+request.form["lastname"]
+                address = request.form["line1"]+";"+request.form["line2"]+";"+request.form["city"]
+                postcode = request.form["postcode"]
 
-            new_order = DBOrders(accountID=accountID,total=basket.total,nameTo=AES_with_ECB_ENCODE(nameTo),address=AES_with_ECB_ENCODE(address),postcode=AES_with_ECB_ENCODE(postcode))
-            try:
-                db.session.add(new_order)
-                db.session.commit()
-            except:
-                #Goes to this as needs to be signed into an account
-                basketItem = []
-
-                for i in range(0,basket.quantities.__len__()):
-                    fullProduct = DBProducts.query.get_or_404(basket.productIDs[i])
-                    basketItem.append({
-                        "product": fullProduct,
-                        "quantityAdded": basket.quantities[i],
-                        "subtotals": float(basket.quantities[i])*fullProduct.price,
-                    })
-                return render_template("Login.html",error_message="Please Login before placing an order")
-
-            for i in range(0,basket.productIDs.__len__()):
-                product  = DBProducts.query.get_or_404(basket.productIDs[i])
-                new_productOrder = DBProductOrders(orderIDForeign=new_order.orderID,productIDForeign=product.id,productQuantity=basket.quantities[i],subtotal=float(basket.quantities[i])*product.price)
-                # push
+                new_order = DBOrders(accountID=accountID,total=basket.total,nameTo=AES_with_ECB_ENCODE(nameTo),address=AES_with_ECB_ENCODE(address),postcode=AES_with_ECB_ENCODE(postcode))
                 try:
-                    db.session.add(new_productOrder)
+                    db.session.add(new_order)
                     db.session.commit()
                 except:
-                    return "There was an error adding this product."
+                    #Goes to this as needs to be signed into an account
+                    basketItem = []
+
+                    for i in range(0,basket.quantities.__len__()):
+                        fullProduct = DBProducts.query.get_or_404(basket.productIDs[i])
+                        basketItem.append({
+                            "product": fullProduct,
+                            "quantityAdded": basket.quantities[i],
+                            "subtotals": float(basket.quantities[i])*fullProduct.price,
+                        })
+                    return render_template("Login.html",error_message="Please Login before placing an order",form=form)
+
+                for i in range(0,basket.productIDs.__len__()):
+                    product  = DBProducts.query.get_or_404(basket.productIDs[i])
+                    new_productOrder = DBProductOrders(orderIDForeign=new_order.orderID,productIDForeign=product.id,productQuantity=basket.quantities[i],subtotal=float(basket.quantities[i])*product.price)
+                    # push
+                    try:
+                        db.session.add(new_productOrder)
+                        db.session.commit()
+                    except:
+                        return "There was an error adding this product."
             
-            # Update DBProducts
-            for i in range(0,basket.productIDs.__len__()):
-                product  = DBProducts.query.get_or_404(basket.productIDs[i])
-                product.quantity = product.quantity - basket.quantities[i]
-                # push
-                try:
-                    db.session.add(product)
-                    db.session.commit()
-                except:
-                    return "There was an error adding this product."
+                # Update DBProducts
+                for i in range(0,basket.productIDs.__len__()):
+                    product  = DBProducts.query.get_or_404(basket.productIDs[i])
+                    product.quantity = product.quantity - basket.quantities[i]
+                    # push
+                    try:
+                        db.session.add(product)
+                        db.session.commit()
+                    except:
+                        return "There was an error adding this product."
 
-            # Clear Basket
-            basket.productIDs = []
-            basket.quantities = []
-            basket.total = 0.00
+                # Clear Basket
+                basket.productIDs = []
+                basket.quantities = []
+                basket.total = 0.00
 
-            return redirect("/basket")
+                return redirect("/basket",form=form)
+            else:
+                return 'CSRF Token Missing or Invalid!'
+
         else:
             return render_template("shipping.html")
 
@@ -363,26 +417,30 @@ def selectshipping():
 def accessAccount():
     global accountID
     global accountType
+    form = NameForm()
 
     if request.method == "POST":
-        attemptedPassword = request.form["password"]
-        attemptedUsername = request.form["username"]
+        if form.validate_on_submit():
+            attemptedPassword = request.form["password"]
+            attemptedUsername = request.form["username"]
 
 
-        try:
-            account = DBAccounts.query.filter_by(username=attemptedUsername).first()
-            salt = bytes.fromhex(account.salt)
-            attemptedPassword = str(hashlib.pbkdf2_hmac('sha256',attemptedPassword.encode(),salt,200000).hex())
-            if account.password == attemptedPassword:
+            try:
                 account = DBAccounts.query.filter_by(username=attemptedUsername).first()
-                accountID = account.accountID
-                accountType = AES_with_ECB_DECODE(account.type)
-                return redirect("/home")
-            else:
-                return render_template("Login.html",error_message = "Username or Password incorrect")
+                salt = bytes.fromhex(account.salt)
+                attemptedPassword = str(hashlib.pbkdf2_hmac('sha256',attemptedPassword.encode(),salt,200000).hex())
+                if account.password == attemptedPassword:
+                    account = DBAccounts.query.filter_by(username=attemptedUsername).first()
+                    accountID = account.accountID
+                    accountType = AES_with_ECB_DECODE(account.type)
+                    return redirect("/home",form=form)
+                else:
+                    return render_template("Login.html",error_message = "Username or Password incorrect",form=form)
 
-        except NotFound:
-            return render_template("Login.html",error_message = "Username or Password incorrect")
+            except NotFound:
+                return render_template("Login.html",error_message = "Username or Password incorrect",form=form)
+        else:
+                return 'CSRF Token Missing or Invalid!'
         
     else:
         if accountID != -1:
@@ -392,33 +450,38 @@ def accessAccount():
 
 @app.route("/createaccount", methods=['GET', 'POST'])
 def createAccount():
+        form = NameForm()
+        
         if request.method == "POST":
-            password = CheckIfViablePassword(
-                request.form["password"], request.form["confirmPassword"]
-            )
-            email = CheckIfViableEmail(request.form["email"])
-            if password and email:
-                usernameToAdd = request.form["username"]
-                passwordToAdd = request.form["password"]
-                firstnameToAdd = request.form["forename"]
-                lastnameToAdd = request.form["surname"]
-                emailToAdd = request.form["email"]
+            if form.validate_on_submit():
+                password = CheckIfViablePassword(
+                    request.form["password"], request.form["confirmPassword"]
+                )
+                email = CheckIfViableEmail(request.form["email"])
+                if password and email:
+                    usernameToAdd = request.form["username"]
+                    passwordToAdd = request.form["password"]
+                    firstnameToAdd = request.form["forename"]
+                    lastnameToAdd = request.form["surname"]
+                    emailToAdd = request.form["email"]
 
-                salt = os.urandom(32)
-                passwordToAdd = str(hashlib.pbkdf2_hmac('sha256', passwordToAdd.encode(), salt, 200000).hex())
-                print(passwordToAdd)
-                new_account = DBAccounts(username=usernameToAdd,password=passwordToAdd,salt=salt.hex(),email=AES_with_ECB_ENCODE_salt(emailToAdd,salt),firstname=AES_with_ECB_ENCODE_salt(firstnameToAdd,salt),lastname=AES_with_ECB_ENCODE_salt(lastnameToAdd,salt),type=AES_with_ECB_ENCODE_salt("0",salt))
-                print("object")
-                try:
-                    db.session.add(new_account)
-                    print("try")
-                    db.session.commit()
-                    print("account")
-                    return redirect("/login")
-                except:
-                    return "There was an error creating this account"
+                    salt = os.urandom(32)
+                    passwordToAdd = str(hashlib.pbkdf2_hmac('sha256', passwordToAdd.encode(), salt, 200000).hex())
+                    print(passwordToAdd)
+                    new_account = DBAccounts(username=usernameToAdd,password=passwordToAdd,salt=salt.hex(),email=AES_with_ECB_ENCODE_salt(emailToAdd,salt),firstname=AES_with_ECB_ENCODE_salt(firstnameToAdd,salt),lastname=AES_with_ECB_ENCODE_salt(lastnameToAdd,salt),type=AES_with_ECB_ENCODE_salt("0",salt))
+                    print("object")
+                    try:
+                        db.session.add(new_account)
+                        print("try")
+                        db.session.commit()
+                        print("account")
+                        return redirect("/login")
+                    except:
+                        return "There was an error creating this account"
+                else:
+                    return render_template("MakeAccount.html",error_message="Please make sure all information fits the requirements")
             else:
-                return render_template("MakeAccount.html",error_message="Please make sure all information fits the requirements")
+                return 'CSRF Token Missing or Invalid!'
         else:
             return render_template("MakeAccount.html")
 
@@ -550,4 +613,4 @@ if __name__ == "__main__":
     basket = Basket()
     accountID = -1
 
-    app.run(host="localhost", debug=True)
+    app.run(host="localhost",debug=False)
