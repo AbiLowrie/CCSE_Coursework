@@ -34,6 +34,10 @@ class NameForm(FlaskForm):
 # global variables
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Strict',
+)
 app.secret_key = 'your_secret_key'  # Required for CSRF protection
 csrf = CSRFProtect(app)  # Enable CSRF Protection
 
@@ -272,6 +276,7 @@ def apply_caching(response):
         "worker-src 'self'; "
         "frame-ancestors 'none';"
     )
+    response.set_cookie('username', 'flask', httponly=True, samesite='Strict')
     return response
 
 
