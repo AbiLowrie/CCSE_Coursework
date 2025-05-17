@@ -420,7 +420,7 @@ def selectshipping():
                 return 'CSRF Token Missing or Invalid!'
 
         else:
-            return render_template("shipping.html")
+            return render_template("shipping.html",form=form)
 
 @app.route("/login", methods=['GET', 'POST'])
 def accessAccount():
